@@ -13,7 +13,7 @@ sys.path.append(os.path.dirname(os.path.abspath(os.path.dirname(__file__))))
 
 from available_functions import update_available_functions, all_functions
 from function_to_call import tool_call_function
-from prompt.system_setup import SYSTEM_SETUP, FALBACK_MESSAGE
+from prompt.system_setup import SYSTEM_SETUP, FALLBACK_PROMPT
 
 load_dotenv()
 client = OpenAI()
@@ -36,7 +36,7 @@ def ask_gpt_functioncall(query, chat_history=None):
         tools = all_functions
 
         response = client.chat.completions.create(
-            model="gpt-4o-mini",
+            model="gpt-4o",
             messages=messages,
             temperature=0.0,
             tools=tools,
@@ -69,13 +69,25 @@ def ask_gpt_functioncall(query, chat_history=None):
             }
         
         else:
+            fallback_response = client.chat.completions.create(
+                model="gpt-4o",
+                messages=[
+                    {"role": "system", "content": FALLBACK_PROMPT},
+                    {"role": "user", "content": query},
+                ],
+                temperature=0.5,
+            )
+            
+            end_time = time.time()  # 실제 종료 시간으로 업데이트
             processing_time = end_time - start_time
+            fallback_usage = fallback_response.usage
+            
             return {
-                "response": FALBACK_MESSAGE,
+                "response": fallback_response.choices[0].message.content,
                 "usage": {
-                    "prompt_tokens": usage.prompt_tokens if usage else 0,
-                    "completion_tokens": usage.completion_tokens if usage else 0,
-                    "total_tokens": usage.total_tokens if usage else 0,
+                    "prompt_tokens": fallback_usage.prompt_tokens if fallback_usage else 0,
+                    "completion_tokens": fallback_usage.completion_tokens if fallback_usage else 0,
+                    "total_tokens": fallback_usage.total_tokens if fallback_usage else 0,
                 },
                 "time": processing_time,
             }
@@ -89,7 +101,7 @@ def ask_gpt_functioncall(query, chat_history=None):
 
 
 if __name__ == "__main__":
-    query = "판매자 계정 생성 방법을 알려줘"
-    # query = "안녕"
+    # query = "판매자 계정 생성 방법을 알려줘"
+    query = "안녕"
     response = ask_gpt_functioncall(query)
     print(response)

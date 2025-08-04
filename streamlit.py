@@ -23,7 +23,7 @@ def call_api(query, history):
         return {"response": f"연결 오류: {str(e)}", "tokens": 0, "time": 0}
 
 
-st.title("🤖 챗봇")
+st.title("🤖 COXWAVE 과제 챗봇")
 
 # 세션 상태 초기화
 if "messages" not in st.session_state:
