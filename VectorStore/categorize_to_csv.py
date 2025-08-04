@@ -4,6 +4,7 @@
 """
 
 import os
+import re
 import pandas as pd
 
 
@@ -366,6 +367,17 @@ def categorize_questions_old(category):
     return "기타"
 
 
+def make_filename(name):
+    """파일명으로 사용하기 안전한 문자열로 변환"""
+    # 특수 문자를 언더스코어로 대체
+    safe_name = re.sub(r'[<>:"/\\|?*.]', '_', name)
+    # 연속된 공백을 언더스코어로 대체
+    safe_name = re.sub(r'\s+', '_', safe_name)
+    # 연속된 언더스코어를 하나로 변환
+    safe_name = re.sub(r'_{2,}', '_', safe_name)
+    return safe_name.strip('_')
+
+
 def main():
     """데이터를 로드하여 카테고리 분류를 수행하고 결과를 CSV 파일로 저장하는 메인 함수"""
     print("=== 카테고리 분류 시작 ===")
@@ -400,14 +412,17 @@ def main():
     # 카테고리별 파일 저장
     for category in df_result["카테고리"].unique():
         category_df = df_result[df_result["카테고리"] == category]
-        filename = f"{category}.csv"
+
+        file_name = make_filename(category)
+        filename = f"{file_name}.csv"
+        filename_full = f"{file_name}_full.csv"
         
         # 간단 버전 (ID, 질문, 카테고리)
         category_simple = category_df[["ID", "질문", "카테고리"]]
         category_simple.to_csv(f"../Data/category_csv/{filename}", index=False, encoding="utf-8-sig")
         
         # 전체 버전 (ID, 질문, 답변, 카테고리)  
-        category_df.to_csv(f"../Data/cstegory_full_csv/{filename}", index=False, encoding="utf-8-sig")
+        category_df.to_csv(f"../Data/cstegory_full_csv/{filename_full}", index=False, encoding="utf-8-sig")
         
         print(f"{category}: {len(category_df)}개 데이터")
 

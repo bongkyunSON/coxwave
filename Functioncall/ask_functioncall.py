@@ -6,7 +6,6 @@
 import os
 import sys
 import time
-import traceback
 from dotenv import load_dotenv
 from openai import OpenAI
 
@@ -22,7 +21,6 @@ client = OpenAI()
 
 def ask_gpt_functioncall(query, chat_history=None):
     """사용자 질문을 받아 GPT 함수 호출을 통해 적절한 카테고리별 검색 함수를 실행하고 답변을 반환하는 메인 함수"""
-    # last_questions = Input_memory.last_questions()
     try:
         start_time = time.time()
         messages = [
@@ -51,14 +49,15 @@ def ask_gpt_functioncall(query, chat_history=None):
 
         tool_calls = response_message.tool_calls
         end_time = time.time()
-        processing_time = end_time - start_time
+        
 
         if tool_calls:
             available_functions = update_available_functions()
 
             for tool_call in tool_calls:
                 tool_call_reponse = tool_call_function(tool_call, available_functions)
-
+            
+            processing_time = end_time - start_time
             return {
                 "response": tool_call_reponse,
                 "usage": {
@@ -68,8 +67,9 @@ def ask_gpt_functioncall(query, chat_history=None):
                 },
                 "time": processing_time,
             }
-
+        
         else:
+            processing_time = end_time - start_time
             return {
                 "response": FALBACK_MESSAGE,
                 "usage": {

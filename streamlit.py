@@ -11,7 +11,7 @@ st.set_page_config(page_title="챗봇", page_icon="🤖")
 def call_api(query, history):
     """FastAPI 서버의 /chat 엔드포인트를 호출하여 사용자 질문에 대한 답변을 요청하는 함수"""
     try:
-        response = requests.post("http://fastapi:8000/chat", 
+        response = requests.post("http://localhost:8000/chat", 
                                json={"query": query, "chat_history": history}, 
                                timeout=30)
         if response.status_code == 200:
